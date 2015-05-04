@@ -1,9 +1,4 @@
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Scanner;
-import java.util.Queue;
+import java.util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -16,10 +11,10 @@ public class ProteinCavities {
     private Scanner atomInput;
 
     // Algorithm fields
-    private ArrayList<Atom> atoms;
-    private LinkedList<AtomPair> validatedPairs;
-    private LinkedList<Point> voidList;
-    private LinkedList<Point> cavityList;
+    private List<Atom> atoms;
+    private Set<AtomPair> validatedPairs;
+    private List<Point> voidList;
+    private List<Point> cavityList;
     
     /**
      * The constructor instantiates the list of atoms, atom pairs, and validated
@@ -33,7 +28,7 @@ public class ProteinCavities {
         this.resolution = resolution;
 
         atoms = new ArrayList<Atom>();
-        validatedPairs = new LinkedList<AtomPair>();
+        validatedPairs = new HashSet<AtomPair>();
         voidList = new LinkedList<Point>();
     }
     
@@ -44,7 +39,7 @@ public class ProteinCavities {
         readFile();
         //fakeAtoms();
         findingValidPairs();
-        System.out.println(Arrays.toString(validatedPairs.toArray()));
+        System.out.println(validatedPairs.size());
         CRUSADEforVoidPoints();
     }
     
