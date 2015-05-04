@@ -36,11 +36,16 @@ public class ProteinCavities {
      * Run all algorithm methods to process data and find cavity points.
      */
     public void run() {
+        System.out.println("- Running algorithm -");
+        System.out.println("Reading input file (" + inFilename + ")...");
         readFile();
         //fakeAtoms();
+        System.out.println("Forming atom pairs...");
         findingValidPairs();
-        System.out.println(validatedPairs.size());
+        System.out.println("\\- Created " + validatedPairs.size() + " pairs");
+        System.out.println("Searching for void points...");
         CRUSADEforVoidPoints();
+        System.out.println("\\- Found " + voidList.size() + " void points");
     }
     
     /**
@@ -163,38 +168,31 @@ public class ProteinCavities {
      * into our voidList. Then only will our holy crusde be complete.
      * All hail the holy Cavity Point.
      */
-    public void CRUSADEforVoidPoints()
-    {
+    public void CRUSADEforVoidPoints() {
         Iterator<AtomPair> iterator = validatedPairs.iterator();
 
-        while(iterator.hasNext())
-        {
+        while(iterator.hasNext()) {
             LinkedList<Point> tempList = new LinkedList<Point>();
             AtomPair pair = iterator.next();
             Vector vector = new Vector(pair.getA(), 
-                pair.getB(), resolution);
+                pair.getB(), probeSphereRadius);
                 
             
             boolean isRemoved = false;
                 
-            while(!vector.arrivedAtTarget() || isRemoved)
-            {
+            while(!vector.arrivedAtTarget() && !isRemoved) {
                 // test the probe sphere
-                if(probeTest(vector.getCurrent()))
-                {
+                if(probeTest(vector.getCurrent())) {
                     tempList.add(vector.getCurrent());
                     vector.step(resolution);
                 }
-                else
-                {
+                else {
                     isRemoved = true;
                     iterator.remove();
-                    
                 }
             }
             
-            if(!isRemoved)
-            {
+            if(!isRemoved) {
                 voidList.addAll(tempList);
             }
         }
@@ -340,6 +338,7 @@ public class ProteinCavities {
         System.out.println("Output filename: " + outFilename);
         System.out.println("Probe radius: " + probeSphereRadius);
         System.out.println("Resolution: " + resolution);
+        System.out.println("");
 
         ProteinCavities cavities = new ProteinCavities(inFilename, outFilename,
                                                        probeSphereRadius,
