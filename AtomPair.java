@@ -7,6 +7,7 @@
 public class AtomPair {
     private Atom A;
     private Atom B;
+    private int hashCodeCached = 0;
     
     /**
      * This contructor takes 2 Atoms. 
@@ -16,6 +17,7 @@ public class AtomPair {
     public AtomPair(Atom A, Atom B) {
         this.A = A;
         this.B = B;
+        this.hashCode();
     }
     
     /**
@@ -54,6 +56,28 @@ public class AtomPair {
         AtomPair otherAtomPair = (AtomPair)other;
         return ((A.equals(otherAtomPair.A) && B.equals(otherAtomPair.B))
             || (A.equals(otherAtomPair.B) && B.equals(otherAtomPair.A)));
+    }
+    
+    /**
+     * Computes the hash code for this class from the two atoms of the pair. To
+     * ensure equaity between pairs where the two atoms are flipped, the hash
+     * code is computed first from the point farther from the origin, and then
+     * from the point closer to the origin.
+     */
+    public int hashCode() {
+        if(hashCodeCached > 0) {
+            return hashCodeCached;
+        }
+        Point origin = new Point(0, 0, 0);
+        double a = origin.distance(A.getCenter());
+        double b = origin.distance(B.getCenter());
+        Atom X = (a > b ? A : B);
+        Atom Y = (a < b ? A : B);
+        int prime = 31;
+        int result = 1;
+        result = prime * result + X.hashCode();
+        result = prime * result + Y.hashCode();
+        return result;
     }
     
     public String toString() {

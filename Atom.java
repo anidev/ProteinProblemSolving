@@ -16,20 +16,6 @@ public class Atom {
     }
     
     /**
-     * This method compares two Atom objects to check if they are equal.
-     * @param other The other Atom object to compare.
-     * @return Returns true if the two Atom objects are equal, false otherwise.
-     */
-    public boolean equals(Object other) {
-        if(other == null || !(other instanceof Atom)) {
-            return false;
-        }
-        Atom otherAtom = (Atom)other;
-        return (this.getCenter().equals(otherAtom.getCenter())
-            && Utils.fequals(this.getRadius(), otherAtom.getRadius()));
-    }
-    
-    /**
      * This method gets the center point of atom.
      * @return Returns the center point of the atom.
      */
@@ -45,6 +31,32 @@ public class Atom {
         return radius;
     }
     
+    /**
+     * This method compares two Atom objects to check if they are equal.
+     * @param other The other Atom object to compare.
+     * @return Returns true if the two Atom objects are equal, false otherwise.
+     */
+    public boolean equals(Object other) {
+        if(other == null || !(other instanceof Atom)) {
+            return false;
+        }
+        Atom otherAtom = (Atom)other;
+        return (this.getCenter().equals(otherAtom.getCenter())
+            && Utils.fequals(this.getRadius(), otherAtom.getRadius()));
+    }
+    
+    /**
+     * Computes the hash code for this class from the center point and radius.
+     * Radius is rounded to 2 decimal places.
+     */
+    public int hashCode() {
+        int prime = 31;
+        int result = 1;
+        result = prime * result + center.hashCode();
+        result = prime * result + (int)(radius * 100);
+        return result;
+    }
+
     public String toString() {
         return "{" + center.toString() + ", " + radius + "}";
     }
