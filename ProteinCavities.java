@@ -285,8 +285,8 @@ public class ProteinCavities {
                 Iterator<Point> untestedIterator = untestedList.iterator();
                 while(untestedIterator.hasNext()) {
                     Point voidPoint = untestedIterator.next();
-                    // Threshold is slightly over resolution to give wiggle room
-                    if(testPoint.distance(voidPoint) < resolution * 1.5) {
+                    // Threshold is 5 times resolution, experimentally seems to best at finding chains
+                    if(testPoint.distance(voidPoint) < resolution * 5) {
                         // Add to chain, queue for subsequent testing, and
                         // remove from the untested list
                         chainList.add(voidPoint);
@@ -315,39 +315,37 @@ public class ProteinCavities {
      * has no void points or atoms nearby.
      */
     public boolean onEdge(Point previous, Point current) {
-        if(previous == null) {
-            return false;
-        }
-        
-        Point unit = Utils.unitVector(previous, current);
-
-        // Use unit vector to decide where to place probe sphere 
-        
-        double distance = 3 * probeSphereRadius; // 1.5 probe spheres should be good
-        
-        double scaledX = distance * unit.getX();
-        double scaledY = distance * unit.getY();
-        double scaledZ = distance * unit.getZ();
-        
+        double step = probeSphereRadius * 2;
         Point[] testpoints = new Point[] {
-                                new Point(current.getX() + scaledX,
-                                          current.getY() + scaledY,
-                                          current.getZ() + scaledZ),
-                                new Point(previous.getX() - scaledX,
-                                          previous.getY() - scaledY,
-                                          previous.getZ() - scaledZ)
-                            };
+            new Point(current.getX() - step, current.getY(), current.getZ()),
+            new Point(current.getX() + step, current.getY(), current.getZ()),
+            new Point(current.getX(), current.getY() - step, current.getZ()),
+            new Point(current.getX(), current.getY() + step, current.getZ()),
+            new Point(current.getX(), current.getY(), current.getZ() - step),
+            new Point(current.getX(), current.getY(), current.getZ() + step)
+        };
 
         // compare if testPoint overlaps a void point
-        // if it does, then return false not on the edge
-        // if it doesn't, then return true, last point was on the edge
-        // Tests point in front of current point as well as behind previous point
+        // If a test point overlaps another void point, it is not at the edge.
+        // If even a single test point is found to be at the edge because it
+        // overlaps nothing, then this void point is considered to be at the edge,
+        // so return true immediately.
+        // If all test points overlap something, then this void point is not
+        // at the edge.
         
         for(int i = 0; i < testpoints.length; i++) {
             Point testpoint = testpoints[i];
             boolean result = true;
             for(Point voidPoint : voidList) {
-                if(testpoint.distance(voidPoint) < probeSphereRadius) {
+                if(current.equals(voidPoint)) {
+                    continue;
+                }
+                if(testpoint.distance(voidPoint) < probeSphereRadius * 2) {
+                    result = false;
+                }
+            }
+            for(Atom atom : atoms) {
+                if(testpoint.distance(atom.getCenter()) < probeSphereRadius + atom.getRadius()) {
                     result = false;
                 }
             }
