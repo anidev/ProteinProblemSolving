@@ -59,6 +59,9 @@ public class ProteinCavities {
         System.out.println("Identifying cavity points...");
         determineCavityPoints();
         System.out.println("\\- Identified " + cavityList.size() + " cavity points");
+        System.out.println("Writing to output file (" + outFilename + ")...");
+        outputFile();
+        System.out.println("\\- Done");
     }
     
 
