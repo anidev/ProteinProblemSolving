@@ -1,4 +1,9 @@
 /**
+ * Java Sun Compiler
+ * Rupin Bhalla, Anirudh Bagde, Gene Kim, Catherine Ta.
+ */
+
+/**
  * This class represents a vector between two atoms, starting and ending probe
  * radius away from the surface of both atoms.
  */
@@ -122,11 +127,7 @@ public class Vector {
      private Point calcUnitVector() {
         Point a = pair.getA().getCenter();
         Point b = pair.getB().getCenter();
-        double magnitude = a.distance(b);
-        double unitX = (b.getX() - a.getX()) / magnitude;
-        double unitY = (b.getY() - a.getY()) / magnitude;
-        double unitZ = (b.getZ() - a.getZ()) / magnitude;
-        return new Point(unitX, unitY, unitZ);
+        return Utils.unitVector(a, b);
      }
     
     /**

@@ -1,4 +1,9 @@
 /**
+ * Java Sun Compiler
+ * Rupin Bhalla, Anirudh Bagde, Gene Kim, Catherine Ta.
+ */
+
+/**
  * This class is meant to represent an Atom Pair. In this class
  * we are are going to be taking 2 atoms as a parameter, and comparing if 
  * the distance between the two (with no Radius). Also we are also comparing if

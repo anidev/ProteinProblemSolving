@@ -1,7 +1,17 @@
+/**
+ * Java Sun Compiler
+ * Rupin Bhalla, Anirudh Bagde, Gene Kim, Catherine Ta.
+ */
 import java.util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileWriter;
 
+/**
+ * This class is the ProteinCavaties Class. This is the main part of the code,
+ * we implement all our methods, and we find the cavity points in this class
+ */ 
 public class ProteinCavities {
     // Parameters
     private String inFilename;
@@ -19,8 +29,8 @@ public class ProteinCavities {
     /**
      * The constructor instantiates the list of atoms, atom pairs, and validated
      * pairs.
-     */ 
-    public ProteinCavities(String inFilename, String outFilename,
+     */
+    ProteinCavities(String inFilename, String outFilename,
                            double probeSphereRadius, double resolution) {
         this.inFilename = inFilename;
         this.outFilename = outFilename;
@@ -30,6 +40,7 @@ public class ProteinCavities {
         atoms = new ArrayList<Atom>();
         validatedPairs = new HashSet<AtomPair>();
         voidList = new LinkedList<Point>();
+        cavityList = new LinkedList<Point>();
     }
     
     /**
@@ -39,31 +50,22 @@ public class ProteinCavities {
         System.out.println("- Running algorithm -");
         System.out.println("Reading input file (" + inFilename + ")...");
         readFile();
-        //fakeAtoms();
         System.out.println("Forming atom pairs...");
         findingValidPairs();
         System.out.println("\\- Created " + validatedPairs.size() + " pairs");
         System.out.println("Searching for void points...");
         CRUSADEforVoidPoints();
         System.out.println("\\- Found " + voidList.size() + " void points");
+        System.out.println("Identifying cavity points...");
+        determineCavityPoints();
+        System.out.println("\\- Identified " + cavityList.size() + " cavity points");
     }
     
-    /**
-     * Populates fake atom points since file reading code is not yet ready.
-     */
-     public void fakeAtoms() {
-         atoms.add(new Atom(new Point(0, 0, 0), 1));
-         atoms.add(new Atom(new Point(5, 0, 0), 1));
-         atoms.add(new Atom(new Point(2.5, 2.5, 0), 1));
-         atoms.add(new Atom(new Point(2.5, -2.5, 0), 1));
-         atoms.add(new Atom(new Point(2.5, 0, 2.5), 1));
-         atoms.add(new Atom(new Point(2.5, 0, -2.5), 1));
-     }
 
     /**
      * Reads protein data from a file. Each line in the file represents a single
      * atom of the protein, along with its coordinates and radius. The format
-     * for the file is given in the project description PDF. This method should
+     * for the file is given in the project description PDF. This method should 
      * populate the atoms list with Atom objects for each atom in the file.
      */
     public void readFile() {
@@ -76,16 +78,8 @@ public class ProteinCavities {
             System.exit(1);
         }
         
-        while (scanner.hasNextLine())
-        {
+        while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            /**
-            double xCoord = Double.parseDouble(line.substring(31, 37));
-            double yCoord = Double.parseDouble(line.substring(39, 45));
-            double zCoord = Double.parseDouble(line.substring(47, 53));
-            double foundRadius = Double.parseDouble(line.substring(55, 59));
-            **/
-            
             String[] splitLines = line.split("\\s+");
             double xCoord = Double.parseDouble(splitLines[5]);
             double yCoord = Double.parseDouble(splitLines[6]);
@@ -101,12 +95,57 @@ public class ProteinCavities {
     
     /**
      * Creates a direct copy of the input file, but with cavity points at the end of the file.
-     * 
-     * */
+     */
      public void outputFile()
      {
-         //not started
-     }
+         File atomInput = new File(inFilename);
+         File atomOutput = new File(outFilename);
+         FileWriter filewriter = null;
+         Scanner scanner = null;
+            
+        try 
+        {
+            scanner = new Scanner(atomInput);
+            filewriter = new FileWriter(atomOutput, true);
+        } 
+        catch(FileNotFoundException e ) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        catch(IOException b){
+            b.printStackTrace();
+            System.exit(1);
+        }
+       
+        
+        while (scanner.hasNextLine())
+        {
+            String line = scanner.nextLine();
+            try {
+               filewriter.write(line);
+            } 
+            catch(IOException b) {
+                b.printStackTrace();
+                System.exit(1);
+            }
+        }
+        Iterator<Point> iterator = cavityList.iterator();
+        int i = 0;
+        while(iterator.hasNext())
+        {
+            Point cavity = iterator.next();
+            try {
+                filewriter.write("ATOM  1000" + i + "  MC  CAV  500" + i + "      ");
+                filewriter.write(cavity.getX() + "   " + cavity.getY() + "   " + cavity.getZ() + "   1.00 " + probeSphereRadius);
+                filewriter.write(System.getProperty("line.separator"));  //breaks line.
+            }
+            catch(IOException b) {
+                b.printStackTrace();
+                System.exit(1);
+            }
+            i++;
+        }
+    }
     
     /**
      * Tests to see if there is enough space for a probe sphere at the given
@@ -119,9 +158,10 @@ public class ProteinCavities {
         boolean probeClear = true;
         for (int i = 0; i < atoms.size(); i++)
         {
-            double distance = probe.distance(atoms.get(i).getCenter()); // calculates distance between probe point and atom point.
+            Atom atom = atoms.get(i);
+            double distance = probe.distance(atom.getCenter()); // calculates distance between probe point and atom point.
             
-            if (distance < atoms.get(i).getRadius() + probeSphereRadius) // if the distance between the centers is smaller than the sum of the radii of the spheres, probeClear = false.
+            if (distance < atom.getRadius() + probeSphereRadius) // if the distance between the centers is smaller than the sum of the radii of the spheres, probeClear = false.
             {
                 probeClear = false;
                 break;
@@ -165,9 +205,10 @@ public class ProteinCavities {
      * if a void point can be placed along increments of the resolution length.
      * If a void point can not be put we remove it from our validatedPairs List,
      * but if a void point can be put there, then we will put the specific pair
-     * into our voidList. Then only will our holy crusde be complete.
+     * into our voidList. Then only will our holy crusade be complete.
      * All hail the holy Cavity Point.
      */
+    public int output = 0;
     public void CRUSADEforVoidPoints() {
         Iterator<AtomPair> iterator = validatedPairs.iterator();
 
@@ -191,7 +232,6 @@ public class ProteinCavities {
                     iterator.remove();
                 }
             }
-            
             if(!isRemoved) {
                 voidList.addAll(tempList);
             }
@@ -240,68 +280,46 @@ public class ProteinCavities {
             
             // If not a single point in the chain was on the edge, then the
             // entire chain represents a cavity within the protein.
-            if(chainExposed) {
+            if(!chainExposed) {
                 cavityList.addAll(chainList);
             }
         }
     }
     
-    public boolean onEdge(Point previous, Point current) 
-    {
-        if(previous == null)
-        {
+    public boolean onEdge(Point previous, Point current) {
+        if(previous == null) {
             return false;
         }
         
-        double magnitude = previous.distance(current);
-        double unitX = (current.getX() - previous.getX()) / magnitude;
-        double unitY = (current.getY() - previous.getY()) / magnitude;
-        double unitZ = (current.getZ() - previous.getZ()) / magnitude;
-        
-        // 1 probe sphere distance
+        Point unit = Utils.unitVector(previous, current);
+
         // Use unit vector to decide where to place probe sphere 
         
-        double distance = 2 * probeSphereRadius;
+        double distance = 3 * probeSphereRadius; // 1.5 probe spheres should be good
         
-        double scaledX = distance * unitX;
-        double scaledY = distance * unitY;
-        double scaledZ = distance * unitZ;
+        double scaledX = distance * unit.getX();
+        double scaledY = distance * unit.getY();
+        double scaledZ = distance * unit.getZ();
         
         Point testpoint = new Point(current.getX() + scaledX, current.getY() 
             + scaledY, current.getZ() + scaledZ);
-            
-        
+
         // compare if testPoint overlapps a void point
         // if it does, then return false not on the edge
         // if it doesn't, then return true, last point was on the edge
         
+        for(Point voidPoint : voidList) {
+            if(testpoint.distance(voidPoint) < probeSphereRadius) {
+                return false;
+            }
+        }
         
-        
-        
-        
-        
-        
-           
-        
-        
-            
-            
-        //Point a = pair.getA().getCenter();
-        //Point b = pair.getB().getCenter();
-        //double magnitude = a.distance(b);
-        //double unitX = (b.getX() - a.getX()) / magnitude;
-        //double unitY = (b.getY() - a.getY()) / magnitude;
-        //double unitZ = (b.getZ() - a.getZ()) / magnitude;
-        //return new Point(unitX, unitY, unitZ);
-        
-        
-        return false; // this line is here just it compiles, fix it later
+        return true;
     }
-    
     
     /**
      * This method is meant to say how Ani is super smart and is a GOD Among us
-     * all
+     * all. Mwhaaaaaaaa!!!
      */ 
     public static void main(String[] args) {
         if(args.length == 0) {
@@ -310,7 +328,7 @@ public class ProteinCavities {
         }
         String inFilename = "";
         String outFilename = "";
-        double probeSphereRadius = 1.7;
+        double probeSphereRadius = 1.4;
         double resolution = 0.25;
         for(int i = 0; i < args.length; i++) {
             String arg = args[i];

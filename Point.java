@@ -1,4 +1,9 @@
 /**
+ * Java Sun Compiler
+ * Rupin Bhalla, Anirudh Bagde, Gene Kim, Catherine Ta.
+ */
+
+/**
  * This class represents a point.
  */
 public class Point {

@@ -1,3 +1,11 @@
+/**
+ * Java Sun Compiler
+ * Rupin Bhalla, Anirudh Bagde, Gene Kim, Catherine Ta.
+ */
+
+/**
+ * These are our Basic Tests for the algorithm
+ */ 
 public class BasicTests {
     public static void main(String[] args) {
         //TEST FOR POINT (works as expected)
