@@ -99,15 +99,13 @@ public class ProteinCavities {
     /**
      * Creates a direct copy of the input file, but with cavity points at the end of the file.
      */
-     public void outputFile()
-     {
+     public void outputFile() {
          File atomInput = new File(inFilename);
          File atomOutput = new File(outFilename);
          FileWriter filewriter = null;
          Scanner scanner = null;
             
-        try 
-        {
+        try {
             scanner = new Scanner(atomInput);
             filewriter = new FileWriter(atomOutput, true);
         } 
@@ -115,14 +113,13 @@ public class ProteinCavities {
             e.printStackTrace();
             System.exit(1);
         }
-        catch(IOException b){
+        catch(IOException b) {
             b.printStackTrace();
             System.exit(1);
         }
        
         
-        while (scanner.hasNextLine())
-        {
+        while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             try {
                filewriter.write(line);
@@ -134,8 +131,7 @@ public class ProteinCavities {
         }
         Iterator<Point> iterator = cavityList.iterator();
         int i = 0;
-        while(iterator.hasNext())
-        {
+        while(iterator.hasNext()) {
             Point cavity = iterator.next();
             try {
                 filewriter.write("ATOM  1000" + i + "  MC  CAV  500" + i + "      ");
@@ -159,13 +155,11 @@ public class ProteinCavities {
      */
     public boolean probeTest(Point probe) {
         boolean probeClear = true;
-        for (int i = 0; i < atoms.size(); i++)
-        {
+        for (int i = 0; i < atoms.size(); i++) {
             Atom atom = atoms.get(i);
             double distance = probe.distance(atom.getCenter()); // calculates distance between probe point and atom point.
             
-            if (distance < atom.getRadius() + probeSphereRadius) // if the distance between the centers is smaller than the sum of the radii of the spheres, probeClear = false.
-            {
+            if (distance < atom.getRadius() + probeSphereRadius) { // if the distance between the centers is smaller than the sum of the radii of the spheres, probeClear = false.
                 probeClear = false;
                 break;
             }
@@ -241,6 +235,9 @@ public class ProteinCavities {
         }
     }
     
+    /**
+     * This method determines if the void points are cavity points.
+     */ 
     public void determineCavityPoints() {
         LinkedList<Point> untestedList = new LinkedList<Point>(voidList);
         LinkedList<Point> chainList = new LinkedList<Point>();
@@ -289,6 +286,10 @@ public class ProteinCavities {
         }
     }
     
+    /**
+     * This method checks if the void point is on the edge of the protein
+     * @return boolean Returns true if the point is on the edge
+     */ 
     public boolean onEdge(Point previous, Point current) {
         if(previous == null) {
             return false;
