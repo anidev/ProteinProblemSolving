@@ -107,7 +107,7 @@ public class ProteinCavities {
             
         try {
             scanner = new Scanner(atomInput);
-            filewriter = new FileWriter(atomOutput, true);
+            filewriter = new FileWriter(atomOutput);
         } 
         catch(FileNotFoundException e ) {
             e.printStackTrace();
@@ -123,7 +123,8 @@ public class ProteinCavities {
             String line = scanner.nextLine();
             try {
                filewriter.write(line);
-            } 
+               filewriter.write(System.getProperty("line.separator"));
+            }
             catch(IOException b) {
                 b.printStackTrace();
                 System.exit(1);
@@ -143,6 +144,12 @@ public class ProteinCavities {
                 System.exit(1);
             }
             i++;
+        }
+        try {
+            scanner.close();
+            filewriter.close();
+        } catch(IOException e) {
+            e.printStackTrace();
         }
     }
     
@@ -261,7 +268,7 @@ public class ProteinCavities {
                 while(untestedIterator.hasNext()) {
                     Point voidPoint = untestedIterator.next();
                     // Threshold is slightly over resolution to give wiggle room
-                    if(testPoint.distance(voidPoint) < resolution + 0.001) {
+                    if(testPoint.distance(voidPoint) < resolution * 1.5) {
                         // Add to chain, queue for subsequent testing, and
                         // remove from the untested list
                         chainList.add(voidPoint);
@@ -277,7 +284,6 @@ public class ProteinCavities {
                     }
                 }
             }
-            
             // If not a single point in the chain was on the edge, then the
             // entire chain represents a cavity within the protein.
             if(!chainExposed) {
@@ -287,9 +293,9 @@ public class ProteinCavities {
     }
     
     /**
-     * This method checks if the void point is on the edge of the protein
-     * @return boolean Returns true if the point is on the edge
-     */ 
+     * Returns true if point is on the edge, which is true when the given point
+     * has no void points or atoms nearby.
+     */
     public boolean onEdge(Point previous, Point current) {
         if(previous == null) {
             return false;
@@ -305,20 +311,32 @@ public class ProteinCavities {
         double scaledY = distance * unit.getY();
         double scaledZ = distance * unit.getZ();
         
-        Point testpoint = new Point(current.getX() + scaledX, current.getY() 
-            + scaledY, current.getZ() + scaledZ);
+        Point[] testpoints = new Point[] {
+                                new Point(current.getX() + scaledX,
+                                          current.getY() + scaledY,
+                                          current.getZ() + scaledZ),
+                                new Point(previous.getX() - scaledX,
+                                          previous.getY() - scaledY,
+                                          previous.getZ() - scaledZ)
+                            };
 
         // compare if testPoint overlapps a void point
         // if it does, then return false not on the edge
         // if it doesn't, then return true, last point was on the edge
         
-        for(Point voidPoint : voidList) {
-            if(testpoint.distance(voidPoint) < probeSphereRadius) {
-                return false;
+        for(int i = 0; i < testpoints.length; i++) {
+            Point testpoint = testpoints[i];
+            boolean result = true;
+            for(Point voidPoint : voidList) {
+                if(testpoint.distance(voidPoint) < probeSphereRadius) {
+                    result = false;
+                }
+            }
+            if(result) {
+                return true;
             }
         }
-        
-        return true;
+        return false;
     }
     
     /**
