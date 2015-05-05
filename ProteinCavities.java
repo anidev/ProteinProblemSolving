@@ -295,6 +295,10 @@ public class ProteinCavities {
         }
     }
     
+    /**
+     * Returns true if point is on the edge, which is true when the given point
+     * has no void points or atoms nearby.
+     */
     public boolean onEdge(Point previous, Point current) {
         if(previous == null) {
             return false;
@@ -310,20 +314,32 @@ public class ProteinCavities {
         double scaledY = distance * unit.getY();
         double scaledZ = distance * unit.getZ();
         
-        Point testpoint = new Point(current.getX() + scaledX, current.getY() 
-            + scaledY, current.getZ() + scaledZ);
+        Point[] testpoints = new Point[] {
+                                new Point(current.getX() + scaledX,
+                                          current.getY() + scaledY,
+                                          current.getZ() + scaledZ),
+                                new Point(previous.getX() - scaledX,
+                                          previous.getY() - scaledY,
+                                          previous.getZ() - scaledZ)
+                            };
 
         // compare if testPoint overlapps a void point
         // if it does, then return false not on the edge
         // if it doesn't, then return true, last point was on the edge
         
-        for(Point voidPoint : voidList) {
-            if(testpoint.distance(voidPoint) < probeSphereRadius) {
-                return false;
+        for(int i = 0; i < testpoints.length; i++) {
+            Point testpoint = testpoints[i];
+            boolean result = true;
+            for(Point voidPoint : voidList) {
+                if(testpoint.distance(voidPoint) < probeSphereRadius) {
+                    result = false;
+                }
+            }
+            if(result) {
+                return true;
             }
         }
-        
-        return true;
+        return false;
     }
     
     /**
