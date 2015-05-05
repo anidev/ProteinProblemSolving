@@ -109,7 +109,7 @@ public class ProteinCavities {
         try 
         {
             scanner = new Scanner(atomInput);
-            filewriter = new FileWriter(atomOutput, true);
+            filewriter = new FileWriter(atomOutput);
         } 
         catch(FileNotFoundException e ) {
             e.printStackTrace();
@@ -126,7 +126,8 @@ public class ProteinCavities {
             String line = scanner.nextLine();
             try {
                filewriter.write(line);
-            } 
+               filewriter.write(System.getProperty("line.separator"));
+            }
             catch(IOException b) {
                 b.printStackTrace();
                 System.exit(1);
@@ -147,6 +148,12 @@ public class ProteinCavities {
                 System.exit(1);
             }
             i++;
+        }
+        try {
+            scanner.close();
+            filewriter.close();
+        } catch(IOException e) {
+            e.printStackTrace();
         }
     }
     
@@ -264,7 +271,7 @@ public class ProteinCavities {
                 while(untestedIterator.hasNext()) {
                     Point voidPoint = untestedIterator.next();
                     // Threshold is slightly over resolution to give wiggle room
-                    if(testPoint.distance(voidPoint) < resolution + 0.001) {
+                    if(testPoint.distance(voidPoint) < resolution * 1.5) {
                         // Add to chain, queue for subsequent testing, and
                         // remove from the untested list
                         chainList.add(voidPoint);
@@ -280,7 +287,6 @@ public class ProteinCavities {
                     }
                 }
             }
-            
             // If not a single point in the chain was on the edge, then the
             // entire chain represents a cavity within the protein.
             if(!chainExposed) {
