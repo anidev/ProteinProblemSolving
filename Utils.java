@@ -1,4 +1,14 @@
 /**
+ * Intro to Problem Solving - Onufriev
+ * Final Project
+ * 
+ * Language: Java
+ * 
+ * Authors:
+ * Rupin Bhalla, Anirudh Bagde, Gene Kim, Catherine Ta.
+ */
+
+/**
  * General utility functions go here.
  */
 public class Utils {

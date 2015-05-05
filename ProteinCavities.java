@@ -1,7 +1,13 @@
 /**
- * Java Sun Compiler
+ * Intro to Problem Solving - Onufriev
+ * Final Project
+ * 
+ * Language: Java
+ * 
+ * Authors:
  * Rupin Bhalla, Anirudh Bagde, Gene Kim, Catherine Ta.
  */
+
 import java.util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
