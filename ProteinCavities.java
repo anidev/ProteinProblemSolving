@@ -37,6 +37,7 @@ public class ProteinCavities {
         this.probeSphereRadius = probeSphereRadius;
         this.resolution = resolution;
 
+        // Initialize lists
         atoms = new ArrayList<Atom>();
         validatedPairs = new HashSet<AtomPair>();
         voidList = new LinkedList<Point>();
@@ -82,8 +83,10 @@ public class ProteinCavities {
         }
         
         while (scanner.hasNextLine()) {
+            // Each line is divided into columns
+            // X,Y,Z are columns 6,7,8, radius is column 10
             String line = scanner.nextLine();
-            String[] splitLines = line.split("\\s+");
+            String[] splitLines = line.split("\\s+"); // Split by spaces
             double xCoord = Double.parseDouble(splitLines[5]);
             double yCoord = Double.parseDouble(splitLines[6]);
             double zCoord = Double.parseDouble(splitLines[7]);
@@ -99,11 +102,12 @@ public class ProteinCavities {
     /**
      * Creates a direct copy of the input file, but with cavity points at the end of the file.
      */
-     public void outputFile() {
-         File atomInput = new File(inFilename);
-         File atomOutput = new File(outFilename);
-         FileWriter filewriter = null;
-         Scanner scanner = null;
+    public void outputFile() {
+        // Open input and output files
+        File atomInput = new File(inFilename);
+        File atomOutput = new File(outFilename);
+        FileWriter filewriter = null;
+        Scanner scanner = null;
             
         try {
             scanner = new Scanner(atomInput);
@@ -118,7 +122,7 @@ public class ProteinCavities {
             System.exit(1);
         }
        
-        
+        // First copy all of input file to output file
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             try {
@@ -130,6 +134,7 @@ public class ProteinCavities {
                 System.exit(1);
             }
         }
+        // Then add all cavity points to output file
         Iterator<Point> iterator = cavityList.iterator();
         int i = 0;
         while(iterator.hasNext()) {
@@ -145,6 +150,7 @@ public class ProteinCavities {
             }
             i++;
         }
+        // Close output streams
         try {
             scanner.close();
             filewriter.close();
@@ -162,11 +168,13 @@ public class ProteinCavities {
      */
     public boolean probeTest(Point probe) {
         boolean probeClear = true;
+        // Check probe point against all atoms
         for (int i = 0; i < atoms.size(); i++) {
             Atom atom = atoms.get(i);
             double distance = probe.distance(atom.getCenter()); // calculates distance between probe point and atom point.
             
-            if (distance < atom.getRadius() + probeSphereRadius) { // if the distance between the centers is smaller than the sum of the radii of the spheres, probeClear = false.
+            // if the distance between the centers is smaller than the sum of the radii of the spheres, probeClear = false.
+            if (distance < atom.getRadius() + probeSphereRadius) {
                 probeClear = false;
                 break;
             }
@@ -191,6 +199,9 @@ public class ProteinCavities {
                     continue;
                 }
                 AtomPair pair = new AtomPair(atoms.get(i), atoms.get(j));
+                // Checks distance is big enough, and makes sure flip of pair
+                // is not already in the list
+                // validatedPairs.contains is O(1) because it uses HashSet
                 if (pair.distance() > probeSphereRadius * 2
                     && !validatedPairs.contains(pair)) {
                     validatedPairs.add(pair);
@@ -215,7 +226,7 @@ public class ProteinCavities {
     public int output = 0;
     public void CRUSADEforVoidPoints() {
         Iterator<AtomPair> iterator = validatedPairs.iterator();
-
+        // Check each pair
         while(iterator.hasNext()) {
             LinkedList<Point> tempList = new LinkedList<Point>();
             AtomPair pair = iterator.next();
@@ -224,7 +235,7 @@ public class ProteinCavities {
                 
             
             boolean isRemoved = false;
-                
+            // Step along vector
             while(!vector.arrivedAtTarget() && !isRemoved) {
                 // test the probe sphere
                 if(probeTest(vector.getCurrent())) {
@@ -236,6 +247,7 @@ public class ProteinCavities {
                     iterator.remove();
                 }
             }
+            // If entire pair succeeded, then add the points along the vector
             if(!isRemoved) {
                 voidList.addAll(tempList);
             }
@@ -320,9 +332,10 @@ public class ProteinCavities {
                                           previous.getZ() - scaledZ)
                             };
 
-        // compare if testPoint overlapps a void point
+        // compare if testPoint overlaps a void point
         // if it does, then return false not on the edge
         // if it doesn't, then return true, last point was on the edge
+        // Tests point in front of current point as well as behind previous point
         
         for(int i = 0; i < testpoints.length; i++) {
             Point testpoint = testpoints[i];
@@ -340,8 +353,7 @@ public class ProteinCavities {
     }
     
     /**
-     * This method is meant to say how Ani is super smart and is a GOD Among us
-     * all. Mwhaaaaaaaa!!!
+     * Main method. Arguments are -i, -o, -probe, and -resolution
      */ 
     public static void main(String[] args) {
         if(args.length == 0) {
